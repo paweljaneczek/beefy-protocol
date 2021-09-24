@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -5,7 +9,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IStrategy.sol";
 
-contract MofyVault is ERC20, Ownable, ReentrancyGuard {
+contract MofiVault is ERC20, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -21,6 +25,7 @@ contract MofyVault is ERC20, Ownable, ReentrancyGuard {
     // The minimum time it has to pass before a strat candidate can be approved.
     uint256 public immutable approvalDelay;
 
+    event InitializedStrat(address implementation);
     event NewStratCandidate(address implementation);
     event UpgradeStrat(address implementation);
 
@@ -142,6 +147,18 @@ contract MofyVault is ERC20, Ownable, ReentrancyGuard {
         }
 
         want().safeTransfer(msg.sender, r);
+    }
+
+    /** 
+     * @dev Initialize strat. Can be done only once.
+     * @param _implementation The address of the strategy.  
+     */
+    function initializeStrat(address _implementation) public onlyOwner {
+        require(address(strategy) == address(0), "Strategy already initialized");
+
+        emit InitializedStrat(_implementation);
+
+        strategy = IStrategy(_implementation);
     }
 
     /** 

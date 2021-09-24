@@ -1,15 +1,15 @@
-const MofyVault = artifacts.require("MofyVault");
+const MofiVault = artifacts.require("MofiVault");
 const MOFI = artifacts.require("MOFI");
 const StrategyMoonChefLP = artifacts.require("StrategyMoonChefLP");
 
 module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(
-    MofyVault,
+    MofiVault,
     "Mii Moonfarm DAI-USDC",
     "miiMoonfarmDAI-USDC",
-    0,
+    21600,
   );
-  const vault = await MofyVault.deployed();
+  const vault = await MofiVault.deployed();
   const wmovrToken = "0x98878B06940aE243284CA214f92Bb71a2b032B8A";
   const moonToken = "0xB497c3E9D27Ba6b1fea9F1b941d8C79E66cfC9d6";
   const daiToken = "0x80A16016cC4A2E6a2CACA8a4a498b1699fF0f844";
@@ -29,6 +29,5 @@ module.exports = async function (deployer, network, accounts) {
     [wmovrToken, usdcToken],
   );
   const strategyAddress = (await StrategyMoonChefLP.deployed()).address;
-  vault.proposeStrat(strategyAddress);
-  vault.upgradeStrat();
+  await vault.initializeStrat(strategyAddress);
 };
