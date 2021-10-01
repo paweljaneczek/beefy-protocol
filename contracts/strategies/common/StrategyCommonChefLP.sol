@@ -77,7 +77,7 @@ contract StrategyCommonChefLP is StratManager, FeeManager {
 
         isNativeRoutes = (_toLp0Route[0] == _native && _toLp1Route[0] == _native);
 
-        _giveAllowancesArguments(_want, _chef, _output, _unirouter, _lpToken0, _lpToken1);
+        _giveAllowancesArguments(_want, _chef, _output, _unirouter, _lpToken0, _lpToken1, _native);
     }
 
     // puts the funds to work
@@ -168,7 +168,9 @@ contract StrategyCommonChefLP is StratManager, FeeManager {
 
         uint256 lp0Bal = IERC20(lpToken0).balanceOf(address(this));
         uint256 lp1Bal = IERC20(lpToken1).balanceOf(address(this));
-        IUniswapRouterETH(unirouter).addLiquidity(lpToken0, lpToken1, lp0Bal, lp1Bal, 1, 1, address(this), block.timestamp);
+        uint256 lp0BalMinimum = lp0Bal.mul(98).div(100);
+        uint256 lp1BalMinimum = lp1Bal.mul(98).div(100);
+        IUniswapRouterETH(unirouter).addLiquidity(lpToken0, lpToken1, lp0Bal, lp1Bal, lp0BalMinimum, lp1BalMinimum, address(this), block.timestamp);
     }
 
     // calculate the total underlaying 'want' held by the strat.
@@ -218,7 +220,7 @@ contract StrategyCommonChefLP is StratManager, FeeManager {
     }
 
     function _giveAllowances() internal {
-        _giveAllowancesArguments(want, chef, output, unirouter, lpToken0, lpToken1);
+        _giveAllowancesArguments(want, chef, output, unirouter, lpToken0, lpToken1, native);
     }
 
     function _giveAllowancesArguments(
@@ -227,7 +229,8 @@ contract StrategyCommonChefLP is StratManager, FeeManager {
         address _output,
         address _unirouter,
         address _lpToken0,
-        address _lpToken1
+        address _lpToken1,
+        address _native
     ) internal {
         IERC20(_want).safeApprove(_chef, type(uint128).max);
         IERC20(_output).safeApprove(_unirouter, type(uint128).max);
@@ -237,6 +240,9 @@ contract StrategyCommonChefLP is StratManager, FeeManager {
 
         IERC20(_lpToken1).safeApprove(_unirouter, 0);
         IERC20(_lpToken1).safeApprove(_unirouter, type(uint128).max);
+
+        IERC20(_native).safeApprove(_unirouter, 0);
+        IERC20(_native).safeApprove(_unirouter, type(uint128).max);
     }
 
     function _removeAllowances() internal {
@@ -244,6 +250,9 @@ contract StrategyCommonChefLP is StratManager, FeeManager {
         IERC20(output).safeApprove(unirouter, 0);
         IERC20(lpToken0).safeApprove(unirouter, 0);
         IERC20(lpToken1).safeApprove(unirouter, 0);
+        if (isNativeRoutes) {
+            IERC20(native).safeApprove(unirouter, 0);
+        }
     }
 
     function routeToNative() external view returns(address[] memory) {

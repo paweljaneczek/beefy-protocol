@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "process": "truffle console --network moonriver --verbose-rpc",
+    "migrate": "truffle migration --network moonriver",
     "flatten": "./node_modules/truffle-flattener/index.js"
   },
   "dependencies": {

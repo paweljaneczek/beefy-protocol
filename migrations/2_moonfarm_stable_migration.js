@@ -25,8 +25,8 @@ module.exports = async function (deployer, network, accounts) {
     accounts[0],
     accounts[0],
     [moonToken, wmovrToken],
-    [wmovrToken, daiToken],
-    [wmovrToken, usdcToken],
+    [moonToken, usdcToken, daiToken],
+    [moonToken, usdcToken],
   );
   const strategyAddress = (await StrategyMoonChefLP.deployed()).address;
   await vault.initializeStrat(strategyAddress);
